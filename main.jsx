@@ -1,5 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App.jsx';
+import ResetPassword from './lib/ResetPassword.jsx';
 
-ReactDOM.render(<App />, document.getElementById('app'));
+ReactDOM.render(<ResetPassword minLength={6}
+                               shouldContainUpperCase={true}
+                               shouldContainLowerCase={true}
+                               shouldContainSpecialCharacter={true}
+                               shouldContainNumber={true} />,
+                document.getElementById('app'));
