@@ -2,27 +2,41 @@ import React from 'react';
 
 export default class PasswordConfirmation extends React.Component {
 
+  constructor() {
+    super();
+    this.state = {
+      showPasswordConfirmation: false
+    }
+  }
+
   handleUpdatePasswordConfirmation(event) {
     this.props.updatePasswordConfirmation(event.target.value)
   }
 
+  handleToggleShowClick() {
+    this.setState({
+      showPasswordConfirmation: !this.state.showPasswordConfirmation
+    });
+  }
+
+  passwordType() {
+    return this.state.showPasswordConfirmation ? 'text' : 'password';
+  }
+
+  showHideText() {
+    return this.state.showPasswordConfirmation ? 'Hide' : 'Show'
+  }
+
   render() {
     return <div>
-      <input type="password"
+      <input type={ this.passwordType() }
              placeholder="Confirm Password"
              onChange={ this.handleUpdatePasswordConfirmation.bind(this) }></input>
-      <div>
-        { Object.keys(this.props.errors).map( errorKey => <li key={errorKey}>{ this.props.errors[errorKey] }</li> ) }
-      </div>
+      <button onClick={ this.handleToggleShowClick.bind(this) }>{ this.showHideText() }</button>
     </div>
   }
 }
 
 PasswordConfirmation.propTypes = {
-  errors:                           React.PropTypes.object,
   updatePasswordConfirmation:       React.PropTypes.func.isRequired
-};
-
-PasswordConfirmation.defaultProps = {
-  errors: {}
 };

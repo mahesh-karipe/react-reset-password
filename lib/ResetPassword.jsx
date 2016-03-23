@@ -1,15 +1,18 @@
 import React from 'react';
 import Password from './Password.jsx';
 import PasswordConfirmation from './PasswordConfirmation.jsx';
+import ErrorsList from './ErrorsList.jsx';
 
 export default class ResetPassword extends React.Component {
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       password: '',
       passwordConfirmation: '',
+      allPasswordErrors: this.allPasswordErrors(),
       passwordErrors: {},
+      allPasswordConfirmationErrors: this.allPasswordConfirmationErrors(),
       passwordConfirmationErrors: {}
     };
 
@@ -18,14 +21,14 @@ export default class ResetPassword extends React.Component {
   }
 
   updatePassword(password) {
-    this.setState({ password: password }, function(){
+    this.setState({ password: password }, function() {
       this.validatePassword();
       this.validatePasswordConfirmation();
     });
   }
 
   updatePasswordConfirmation(passwordConfirmation) {
-    this.setState({ passwordConfirmation: passwordConfirmation }, function(){
+    this.setState({ passwordConfirmation: passwordConfirmation }, function() {
       this.validatePasswordConfirmation();
     });
   }
@@ -40,13 +43,13 @@ export default class ResetPassword extends React.Component {
     var errorKey = 'match_password_and_confirmation';
 
     if (this.state.password !== this.state.passwordConfirmation) {
-      errors[errorKey] = 'Passwords do not match yet.';
+      errors[errorKey] = this.state.allPasswordConfirmationErrors[errorKey];
     }
     else {
       delete(errors[errorKey]);
     }
 
-    this.setState({ passwordConfirmationError: errors });
+    this.setState({ passwordConfirmationErrors: errors });
   }
 
   validateLength() {
@@ -54,7 +57,7 @@ export default class ResetPassword extends React.Component {
     var errorKey = 'invalid_length';
 
     if (this.state.password.length < this.props.minLength) {
-      errors[errorKey] = 'Must be at least ' + this.props.minLength + ' characters long';
+      errors[errorKey] = this.state.allPasswordErrors[errorKey];
     }
     else {
       delete(errors[errorKey]);
@@ -72,7 +75,7 @@ export default class ResetPassword extends React.Component {
       this.props.shouldContainNumber && !this.containsNumber() ||
       this.props.shouldContainSpecialCharacter && !this.containsSpecialCharacter()) {
 
-      errors[errorKey] = this.constructErrorMessage();
+      errors[errorKey] = this.state.allPasswordErrors[errorKey];
     }
     else {
       delete(errors[errorKey]);
@@ -97,7 +100,7 @@ export default class ResetPassword extends React.Component {
     return /[!@#$%&*+=;,|:<>\?]/g.test(this.state.password)
   }
 
-  constructErrorMessage() {
+  invalidCharactersMessage() {
     var startString = 'Must have at least'
       , errors = [];
 
@@ -125,16 +128,34 @@ export default class ResetPassword extends React.Component {
     }
   }
 
+  allPasswordConfirmationErrors() {
+    return {
+      'match_password_and_confirmation': 'Passwords do not match yet.'
+    }
+  }
+
+  allPasswordErrors() {
+    return {
+      'invalid_length': 'Must be at least ' + this.props.minLength + ' characters long',
+      'missing_characters': this.invalidCharactersMessage()
+    }
+  }
+
   render() {
     return <div>
       <h3>Reset Password</h3>
-      <Password {...this.props} updatePassword={ this.updatePassword } errors= { this.state.passwordErrors } />
-      <PasswordConfirmation updatePasswordConfirmation={ this.updatePasswordConfirmation } errors= { this.state.passwordConfirmationErrors } />
+      <Password updatePassword={ this.updatePassword } />
+      <ErrorsList allErrors={ this.state.allPasswordErrors }
+                  errors={ this.state.passwordErrors }></ErrorsList>
+
+      <PasswordConfirmation updatePasswordConfirmation={ this.updatePasswordConfirmation } />
+      <ErrorsList allErrors={ this.state.allPasswordConfirmationErrors }
+                  errors={ this.state.passwordConfirmationErrors }></ErrorsList>
     </div>;
   }
 }
 
-Password.propTypes = {
+ResetPassword.propTypes = {
   minLength:                        React.PropTypes.number,
   shouldContainUpperCase:           React.PropTypes.bool,
   shouldContainLowerCase:           React.PropTypes.bool,
@@ -142,7 +163,7 @@ Password.propTypes = {
   shouldContainNumber:              React.PropTypes.bool
 };
 
-Password.defaultProps = {
+ResetPassword.defaultProps = {
   minLength:                        null,
   shouldContainUpperCase:           false,
   shouldContainLowerCase:           false,
